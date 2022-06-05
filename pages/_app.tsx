@@ -1,4 +1,5 @@
 import { MantineProvider } from '@mantine/core';
+import UserProvider from 'components/context/UserContext';
 import type { AppProps } from 'next/app';
 
 function MyApp(props: AppProps) {
@@ -11,7 +12,9 @@ function MyApp(props: AppProps) {
                 colorScheme: 'dark',
             }}
         >
-            <Component {...pageProps} />
+            <UserProvider>
+                <Component {...pageProps} />
+            </UserProvider>
         </MantineProvider>
     );
 }

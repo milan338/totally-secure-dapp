@@ -1,4 +1,5 @@
 import { createStyles, Group, Stack, Text, Button } from '@mantine/core';
+import { useUser } from 'components/context/UserContext';
 import type { Dispatch, SetStateAction } from 'react';
 
 interface PostsHeaderProps {
@@ -22,11 +23,12 @@ const useStyles = createStyles(() => ({
 
 export default function PostsHeader(props: PostsHeaderProps) {
     const { setModalOpen } = props;
+    const { user } = useUser();
     const { classes } = useStyles();
     return (
         <Group position="right" spacing="xl" grow>
             <Stack spacing="xs">
-                <Text>Connected as:</Text>
+                <Text>Connected as: {user.account}</Text>
                 <Text className={classes.title}>Your timeline:</Text>
             </Stack>
             <div className={classes.statusButtonWrapper}>
