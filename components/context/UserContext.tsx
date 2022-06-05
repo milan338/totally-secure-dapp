@@ -6,7 +6,12 @@ interface UserContextProps {
     children: ReactNode;
 }
 
-type UserState = { active: boolean; provider?: providers.Web3Provider; account?: string };
+type UserState = {
+    active: boolean;
+    provider?: providers.Web3Provider;
+    account?: string;
+    chainId?: number;
+};
 type UserData = Partial<UserState>;
 type UserDispatch = (action: UserData) => void;
 type UserContextT = { user: UserState; dispatchUser: UserDispatch };
