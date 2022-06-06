@@ -10,7 +10,11 @@ export default function ConnectModal() {
     const { user, dispatchUser } = useUser();
     const [modalOpen, setModalOpen] = useState(isServer ? false : !user.active);
     const connect = async () => {
-        if (isServer || typeof window.ethereum === 'undefined') return; // TODO prompt to install wallet
+        if (isServer) return;
+        if (typeof window.ethereum === 'undefined') {
+            dispatchUser({ active: false, noWallet: true });
+            return;
+        }
         window.ethereum.request({ method: 'eth_requestAccounts' }).then(async (accounts) => {
             const account = (accounts as Array<string>)[0];
             const provider = new providers.Web3Provider(
@@ -20,6 +24,7 @@ export default function ConnectModal() {
             const active = chainId === CHAIN_ID;
             dispatchUser({
                 active: active,
+                noWallet: false,
                 provider: provider,
                 account: account,
                 chainId: chainId,
@@ -74,15 +79,29 @@ export default function ConnectModal() {
                 if (user.active) setModalOpen(false);
             }}
             title={
-                !user.account
+                /* eslint-disable indent */
+                user.noWallet
+                    ? 'Please install MetaMask wallet'
+                    : !user.account
                     ? 'Please connect your MetaMask wallet'
                     : 'Please set your network to Mainnet'
+                /* eslint-enable indent */
             }
             withCloseButton={false}
             centered
         >
-            <Button onClick={!user.account ? connect : setChain}>
-                {!user.account ? 'Connect wallet' : 'Change chain'}
+            <Button
+                onClick={
+                    /* eslint-disable indent */
+                    user.noWallet
+                        ? () => window.open('https://metamask.io/', '_black')
+                        : !user.account
+                        ? connect
+                        : setChain
+                    /* eslint-enable indent */
+                }
+            >
+                {user.noWallet ? 'Get MetaMask' : !user.account ? 'Connect wallet' : 'Change chain'}
             </Button>
         </Modal>
     );

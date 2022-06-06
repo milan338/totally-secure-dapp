@@ -8,6 +8,7 @@ interface UserContextProps {
 
 type UserState = {
     active: boolean;
+    noWallet?: boolean;
     provider?: providers.Web3Provider;
     account?: string;
     chainId?: number;
