@@ -39,19 +39,31 @@ export default function ConnectModal() {
                 if (err.code === 4902) return;
             });
     };
+    // Show modal when disconnected / on wrong network
     useEffect(() => {
-        window.ethereum?.on('accountsChanged', (accounts) => {
-            const n = (accounts as Array<string>).length;
-            const active = !!n && user.chainId === CHAIN_ID;
-            dispatchUser({ active: active, account: (accounts as Array<string>)[0] });
-            setModalOpen(!active);
-        });
-        window.ethereum?.on('chainChanged', (chainId) => {
-            const id = parseInt(chainId as string);
+        const onAccountsChanged = (accounts: Array<string>) => {
+            {
+                const n = accounts.length;
+                const active = !!n && user.chainId === CHAIN_ID;
+                dispatchUser({ active: active, account: accounts[0] });
+                setModalOpen(!active);
+            }
+        };
+        const onChainChanged = (chainId: string) => {
+            const id = parseInt(chainId);
             const active = !!user.account && id === CHAIN_ID;
             dispatchUser({ active: active, chainId: id });
             setModalOpen(!active);
-        });
+        };
+        window.ethereum?.on('accountsChanged', onAccountsChanged as any);
+        window.ethereum?.on('chainChanged', onChainChanged as any);
+        return () => {
+            window.ethereum?.removeListener('accountsChanged', onAccountsChanged);
+            window.ethereum?.removeListener('chainChanged', onChainChanged);
+        };
+    }, [user, dispatchUser]);
+    // Try to connect to wallet on page load
+    useEffect(() => {
         connect();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
