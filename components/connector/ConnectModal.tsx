@@ -4,7 +4,7 @@ import { Modal, Button } from '@mantine/core';
 import { useUser } from 'components/context/UserContext';
 import { isServer } from 'util/ssr';
 
-const CHAIN_ID = 1; // Mainnet, https://docs.metamask.io/guide/ethereum-provider.html#chain-ids
+const CHAIN_ID = 3; // Ropsten, https://docs.metamask.io/guide/ethereum-provider.html#chain-ids
 
 export default function ConnectModal() {
     const { user, dispatchUser } = useUser();
@@ -84,7 +84,7 @@ export default function ConnectModal() {
                     ? 'Please install MetaMask wallet'
                     : !user.account
                     ? 'Please connect your MetaMask wallet'
-                    : 'Please set your network to Mainnet'
+                    : 'Please set your network to Ropsten'
                 /* eslint-enable indent */
             }
             withCloseButton={false}
@@ -94,7 +94,7 @@ export default function ConnectModal() {
                 onClick={
                     /* eslint-disable indent */
                     user.noWallet
-                        ? () => window.open('https://metamask.io/', '_black')
+                        ? () => window.open('https://metamask.io/', '_blank')
                         : !user.account
                         ? connect
                         : setChain
