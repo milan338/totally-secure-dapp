@@ -1,7 +1,8 @@
 import serviceAccount from '../serviceAccountKey.json';
 import admin from 'firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
-import { ethers, upgrades } from 'hardhat';
+import { nanoid } from 'nanoid';
+import { ethers } from 'hardhat';
 
 const N_DEPLOYMENTS = 5;
 
@@ -13,8 +14,10 @@ async function main() {
     const contractsData = db.collection('contracts').doc('data');
     const TotallySecureDapp = await ethers.getContractFactory('TotallySecureDapp');
     for (let i = 0; i < N_DEPLOYMENTS; i++) {
-        const totallySecureDapp = await upgrades.deployProxy(TotallySecureDapp, ['id']);
+        const id = nanoid();
+        const totallySecureDapp = await TotallySecureDapp.deploy();
         await totallySecureDapp.deployed();
+        await totallySecureDapp.initialize(id);
         contractsData.update({
             contracts: FieldValue.arrayUnion(totallySecureDapp.address),
         });

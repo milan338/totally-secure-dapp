@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { ethers, upgrades } from 'hardhat';
+import { ethers } from 'hardhat';
 import type { Contract } from 'ethers';
 import type { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 
@@ -11,12 +11,19 @@ describe('TotallySecureDapp', () => {
     beforeEach(async () => {
         [owner, addr1, addr2] = await ethers.getSigners();
         TotallySecureDapp = await ethers.getContractFactory('TotallySecureDapp');
-        totallySecureDapp = await upgrades.deployProxy(TotallySecureDapp, ['id']);
+        totallySecureDapp = await TotallySecureDapp.deploy();
         await totallySecureDapp.deployed();
+        await totallySecureDapp.initialize('id');
     });
 
     it('Should set the owner', async () => {
         expect(await totallySecureDapp._owner()).to.equal(owner.address);
+    });
+
+    it('Should not initialize again', async () => {
+        await expect(totallySecureDapp.initialize('id')).to.be.revertedWith(
+            'Initializable: contract is already initialized'
+        );
     });
 
     it('Should add a new post', async () => {
