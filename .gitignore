@@ -2,6 +2,7 @@
 coverage
 coverage.json
 typechain
+serviceAccountKey.json
 
 #Hardhat files
 cache
