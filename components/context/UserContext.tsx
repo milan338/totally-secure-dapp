@@ -12,6 +12,7 @@ type UserState = {
     provider?: providers.Web3Provider;
     account?: string;
     chainId?: number;
+    contractAddress?: string;
 };
 type UserData = Partial<UserState>;
 type UserDispatch = (action: UserData) => void;
