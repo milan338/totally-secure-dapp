@@ -21,7 +21,7 @@ contract TotallySecureDapp is Initializable {
     event FlagCaptured(address indexed capturer);
 
     modifier onlyOwner() {
-        require(msg.sender == _owner, 'Caller is not an admin');
+        require(msg.sender == _owner, 'Caller is not the owner');
         _;
     }
 

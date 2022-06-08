@@ -3,6 +3,7 @@ coverage
 coverage.json
 typechain
 serviceAccountKey.json
+.openzeppelin
 
 #Hardhat files
 cache
