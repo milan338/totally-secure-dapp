@@ -28,7 +28,7 @@ export default function PostsHeader(props: PostsHeaderProps) {
     return (
         <Group position="right" spacing="xl" grow>
             <Stack spacing="xs">
-                <Text>Connected as: {user.account}</Text>
+                <Text>Connected as: {user.address}</Text>
                 <Text className={classes.title}>Your timeline:</Text>
             </Stack>
             <div className={classes.statusButtonWrapper}>

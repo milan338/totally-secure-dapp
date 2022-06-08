@@ -10,7 +10,7 @@ type UserState = {
     active: boolean;
     noWallet?: boolean;
     provider?: providers.Web3Provider;
-    account?: string;
+    address?: string;
     chainId?: number;
     contractAddress?: string;
 };
