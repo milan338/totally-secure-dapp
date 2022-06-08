@@ -54,8 +54,8 @@ describe('TotallySecureDapp', () => {
 
     it('Should only allow admins', async () => {
         const revertReason = 'Caller is not an admin';
-        await expect(totallySecureDapp.doSomething()).to.not.be.revertedWith(revertReason);
-        await expect(totallySecureDapp.connect(addr1).doSomething()).to.be.revertedWith(
+        await expect(totallySecureDapp.captureFlag()).to.not.be.revertedWith(revertReason);
+        await expect(totallySecureDapp.connect(addr1).captureFlag()).to.be.revertedWith(
             revertReason
         );
     });
@@ -83,8 +83,10 @@ describe('TotallySecureDapp', () => {
         );
         // Try to run the admin only function
         const revertReason = 'Caller is not an admin';
-        await expect(totallySecureDapp.connect(addr1).doSomething()).to.not.be.revertedWith(
+        await expect(totallySecureDapp.connect(addr1).captureFlag()).to.not.be.revertedWith(
             revertReason
         );
+        // Flag should be captured
+        expect(await totallySecureDapp.connect(addr1)._flagCaptured()).to.equal(true);
     });
 });

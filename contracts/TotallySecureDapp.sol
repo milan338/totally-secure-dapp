@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.4.24;
 
-import 'hardhat/console.sol';
 import './Initializable.sol';
 
 contract TotallySecureDapp is Initializable {
@@ -14,12 +13,14 @@ contract TotallySecureDapp is Initializable {
     address public _owner;
     address[] public _authors;
     Post[] public _posts;
+    bool public _flagCaptured;
 
     event PostPublished(address indexed author, uint256 indexed index);
     event PostEdited(address indexed author, uint256 indexed index);
     event PostRemoved(address indexed author, uint256 indexed index);
+    event FlagCaptured(address indexed capturer);
 
-    modifier onlyAdmin() {
+    modifier onlyOwner() {
         require(msg.sender == _owner, 'Caller is not an admin');
         _;
     }
@@ -27,6 +28,7 @@ contract TotallySecureDapp is Initializable {
     function initialize(string memory contractId) public initializer {
         _contractId = contractId;
         _owner = msg.sender;
+        _flagCaptured = false;
     }
 
     function addPost(string title, string content) external {
@@ -61,7 +63,8 @@ contract TotallySecureDapp is Initializable {
         return _posts.length;
     }
 
-    function doSomething() external onlyAdmin {
-        console.log('something something');
+    function captureFlag() external onlyOwner {
+        _flagCaptured = true;
+        emit FlagCaptured(msg.sender);
     }
 }
