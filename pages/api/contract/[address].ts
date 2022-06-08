@@ -4,7 +4,7 @@ import { FieldValue } from 'firebase-admin/firestore';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 type Data = {
-    name?: string;
+    contractAddress?: string;
     error?: string;
 };
 
@@ -49,5 +49,5 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
             { merge: true }
         );
     }
-    res.status(200).json({ name: userContract });
+    res.status(200).json({ contractAddress: userContract });
 }
