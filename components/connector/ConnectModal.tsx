@@ -4,6 +4,8 @@ import { Modal, Button } from '@mantine/core';
 import { useUser } from 'components/context/UserContext';
 import { isServer } from 'util/ssr';
 
+type ContractAddress = Record<string, string>;
+
 const CHAIN_ID = 3; // Ropsten, https://docs.metamask.io/guide/ethereum-provider.html#chain-ids
 
 export default function ConnectModal() {
@@ -28,7 +30,7 @@ export default function ConnectModal() {
                 active: active,
                 noWallet: false,
                 provider: provider,
-                account: account,
+                address: account,
                 chainId: chainId,
                 contractAddress: contractAddress,
             });
@@ -48,6 +50,9 @@ export default function ConnectModal() {
             });
     };
     const getContractAddr = async (usrAddr: string): Promise<string> => {
+        const storageValue = window.localStorage.getItem('contract-addresses');
+        const addresses: ContractAddress = storageValue === null ? {} : JSON.parse(storageValue);
+        if (addresses[usrAddr]) return addresses[usrAddr];
         const res = await window.fetch(
             `http://localhost:3000/api/contract/${usrAddr}` // TODO
         );
@@ -57,6 +62,8 @@ export default function ConnectModal() {
             return '';
         }
         setFetchErr('');
+        addresses[usrAddr] = contractAddress;
+        window.localStorage.setItem('contract-addresses', JSON.stringify(addresses));
         return contractAddress;
     };
     // Show modal when disconnected / on wrong network
@@ -68,7 +75,7 @@ export default function ConnectModal() {
                 const contractAddress = await getContractAddr(accounts[0]);
                 dispatchUser({
                     active: active,
-                    account: accounts[0],
+                    address: accounts[0],
                     contractAddress: contractAddress,
                 });
                 setModalOpen(!active);
@@ -76,7 +83,7 @@ export default function ConnectModal() {
         };
         const onChainChanged = (chainId: string) => {
             const id = parseInt(chainId);
-            const active = !!user.account && id === CHAIN_ID;
+            const active = !!user.address && id === CHAIN_ID;
             dispatchUser({ active: active, chainId: id });
             setModalOpen(!active);
         };
@@ -103,7 +110,7 @@ export default function ConnectModal() {
                     /* eslint-disable indent */
                     user.noWallet
                         ? 'Please install MetaMask wallet'
-                        : !user.account
+                        : !user.address
                         ? 'Please connect your MetaMask wallet'
                         : 'Please set your network to Ropsten'
                     /* eslint-enable indent */
@@ -116,7 +123,7 @@ export default function ConnectModal() {
                         /* eslint-disable indent */
                         user.noWallet
                             ? () => window.open('https://metamask.io/', '_blank')
-                            : !user.account
+                            : !user.address
                             ? connect
                             : setChain
                         /* eslint-enable indent */
@@ -126,7 +133,7 @@ export default function ConnectModal() {
                         /* eslint-disable indent */
                         user.noWallet
                             ? 'Get MetaMask'
-                            : !user.account
+                            : !user.address
                             ? 'Connect wallet'
                             : 'Change chain'
                         /* eslint-enable indent */
