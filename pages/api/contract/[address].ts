@@ -1,6 +1,7 @@
 import serviceAccount from '../../../serviceAccountKey.json';
 import admin from 'firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
+import { rateLimit } from 'util/rate-limit';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 type Data = {
@@ -8,8 +9,19 @@ type Data = {
     error?: string;
 };
 
+const rateLimiter = rateLimit({
+    interval: 60000,
+    uniqueTokensPerInterval: 500,
+});
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
     const { address } = req.query;
+    try {
+        await rateLimiter.check(res, 5, 'CACHE_TOKEN'); // 5 requests per minute
+    } catch {
+        res.status(429).json({ error: 'Rate limit exceeded' });
+        return;
+    }
     if (Array.isArray(address)) {
         res.status(400).json({ error: 'Invalid address' });
         return;
