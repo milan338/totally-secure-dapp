@@ -30,7 +30,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
             res.status(401).json({ error: 'Unauthorised' });
         }
     } catch {
-        res.status(400).json({
+        res.status(500).json({
             error: 'Internal error. Were the correct user and contract addresses supplied?',
         });
     }
