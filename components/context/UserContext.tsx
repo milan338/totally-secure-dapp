@@ -1,6 +1,7 @@
 import { createContext, useReducer, useContext } from 'react';
 import { providers } from 'ethers';
 import type { ReactNode } from 'react';
+import type { Contract } from 'ethers';
 
 interface UserContextProps {
     children: ReactNode;
@@ -12,7 +13,8 @@ type UserState = {
     provider?: providers.Web3Provider;
     address?: string;
     chainId?: number;
-    contractAddress?: string;
+    // contractAddress?: string;
+    contract?: Contract;
 };
 type UserData = Partial<UserState>;
 type UserDispatch = (action: UserData) => void;

@@ -1,5 +1,6 @@
+import abi from '../../abi.json';
 import { useState, useEffect } from 'react';
-import { providers } from 'ethers';
+import { Contract, providers } from 'ethers';
 import { Modal, Button } from '@mantine/core';
 import { useUser } from 'components/context/UserContext';
 import { isServer } from 'util/ssr';
@@ -26,13 +27,14 @@ export default function ConnectModal() {
             const { chainId } = await provider.getNetwork();
             const active = chainId === CHAIN_ID;
             const contractAddress = await getContractAddr(account);
+            const contract = new Contract(contractAddress, abi, provider.getSigner());
             dispatchUser({
                 active: active,
                 noWallet: false,
                 provider: provider,
                 address: account,
                 chainId: chainId,
-                contractAddress: contractAddress,
+                contract: contract,
             });
             setModalOpen(!active);
         });
@@ -71,10 +73,11 @@ export default function ConnectModal() {
                 const n = accounts.length;
                 const active = !!n && user.chainId === CHAIN_ID;
                 const contractAddress = await getContractAddr(accounts[0]);
+                const contract = new Contract(contractAddress, abi, user.provider?.getSigner());
                 dispatchUser({
                     active: active,
                     address: accounts[0],
-                    contractAddress: contractAddress,
+                    contract: contract,
                 });
                 setModalOpen(!active);
             }

@@ -1,7 +1,5 @@
-import abi from '../../abi.json';
 import { useState, useRef } from 'react';
 import { Modal, Stack, TextInput, Textarea, Group, Button, Loader } from '@mantine/core';
-import { Contract } from 'ethers';
 import { useUser } from 'components/context/UserContext';
 import type { Dispatch, SetStateAction } from 'react';
 
@@ -20,25 +18,22 @@ export default function PostForm(props: PostFormProps) {
     const titleRef = useRef<HTMLInputElement>(null);
     const contentRef = useRef<HTMLTextAreaElement>(null);
     const onSubmit = async () => {
-        if (!titleRef.current || !contentRef.current || !user.contractAddress || !user.provider)
-            return;
+        if (!titleRef.current || !contentRef.current || !user.contract || !user.provider) return;
         const err = { title: false, content: false };
         if (!titleRef.current.value) err.title = true;
         if (!contentRef.current.value) err.content = true;
         setTitleErr(err.title);
         setContentErr(err.content);
         if (err.title || err.content) return;
-        const signer = user.provider.getSigner();
-        const contract = new Contract(user.contractAddress, abi, signer);
         setLoading(true);
         try {
             if (editingIndex !== undefined)
-                await contract.editPost(
+                await user.contract.editPost(
                     editingIndex,
                     titleRef.current.value,
                     contentRef.current.value
                 );
-            await contract.addPost(titleRef.current.value, contentRef.current.value);
+            await user.contract.addPost(titleRef.current.value, contentRef.current.value);
             setModalOpen(false);
         } catch {}
         setLoading(false);
