@@ -64,7 +64,12 @@ contract TotallySecureDapp is Initializable {
     }
 
     function captureFlag() external onlyOwner {
+        require(address(this).balance > 0.005 ether, 'Balance too low');
         _flagCaptured = true;
         emit FlagCaptured(msg.sender);
+    }
+
+    function() external payable {
+        revert('Contract does not accept payments');
     }
 }

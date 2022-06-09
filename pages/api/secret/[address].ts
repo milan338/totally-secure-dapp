@@ -2,6 +2,7 @@ import serviceAccount from '../../../serviceAccountKey.json';
 import abi from '../../../abi.json';
 import admin from 'firebase-admin';
 import { Contract, getDefaultProvider } from 'ethers';
+import { parseEther } from 'ethers/lib/utils';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 type Data = {
@@ -37,13 +38,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     const contract = new Contract(userContractAddr, abi, provider);
     const owner = await contract._owner();
     const flagCaptured = await contract._flagCaptured();
-    if (owner === address && flagCaptured) {
-        const secrets = db.collection('private').doc('secrets');
-        if (!secrets) {
-            res.status(500).json({ error: 'Failed to load secrets' });
-            return;
-        }
-        const flag = (await secrets.get()).get('flag');
+    const balance = await provider.getBalance(userContractAddr);
+    if (owner === address && flagCaptured && parseEther(balance.toString()).gt(0.005)) {
+        const flag = process.env.FLAG;
         res.status(200).json({ flag: flag });
     } else {
         res.status(401).json({ error: 'Unauthorised' });
