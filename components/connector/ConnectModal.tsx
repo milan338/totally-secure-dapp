@@ -53,9 +53,7 @@ export default function ConnectModal() {
         const storageValue = window.localStorage.getItem('contract-addresses');
         const addresses: ContractAddress = storageValue === null ? {} : JSON.parse(storageValue);
         if (addresses[usrAddr]) return addresses[usrAddr];
-        const res = await window.fetch(
-            `http://localhost:3000/api/contract/${usrAddr}` // TODO
-        );
+        const res = await window.fetch(`/api/contract/${usrAddr}`);
         const { contractAddress, error } = await res.json();
         if (!res.ok) {
             setFetchErr(error);
