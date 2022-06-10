@@ -1,7 +1,10 @@
 import { useState, useRef } from 'react';
 import { Modal, Stack, TextInput, Textarea, Group, Button, Loader } from '@mantine/core';
 import { useUser } from 'components/context/UserContext';
+import { usePosts } from 'components/context/PostsContext';
 import type { Dispatch, SetStateAction } from 'react';
+import type { ContractTransaction } from 'ethers';
+import type { PostPublishedEvent, PostEditedEvent } from 'ethtypes/TotallySecureDapp';
 
 interface PostFormProps {
     modalOpen: boolean;
@@ -12,9 +15,10 @@ interface PostFormProps {
 export default function PostForm(props: PostFormProps) {
     const { modalOpen, setModalOpen, editingIndex } = props;
     const { user } = useUser();
+    const { posts, dispatchPosts } = usePosts();
     const [titleErr, setTitleErr] = useState(false);
     const [contentErr, setContentErr] = useState(false);
-    const [loading, setLoading] = useState(false); // TODO get this able to rerender while stuck inside the async
+    const [loading, setLoading] = useState(false);
     const titleRef = useRef<HTMLInputElement>(null);
     const contentRef = useRef<HTMLTextAreaElement>(null);
     const onSubmit = async () => {
@@ -27,13 +31,38 @@ export default function PostForm(props: PostFormProps) {
         if (err.title || err.content) return;
         setLoading(true);
         try {
-            if (editingIndex !== undefined)
-                await user.contract.editPost(
+            if (editingIndex !== undefined) {
+                const tx: ContractTransaction = await user.contract.editPost(
                     editingIndex,
                     titleRef.current.value,
                     contentRef.current.value
                 );
-            await user.contract.addPost(titleRef.current.value, contentRef.current.value);
+                const receipt = await tx.wait();
+                const editEvents = receipt.events?.filter((e) => {
+                    return e.event === 'PostEdited';
+                });
+                if (editEvents) {
+                    const [event] = editEvents as Array<PostEditedEvent>;
+                    const { index } = event.args;
+                    const newPost = await user.contract._posts(index);
+                    dispatchPosts({ editPost: { i: index.toNumber(), post: newPost } });
+                }
+            } else {
+                const tx: ContractTransaction = await user.contract.addPost(
+                    titleRef.current.value,
+                    contentRef.current.value
+                );
+                const receipt = await tx.wait();
+                const publishEvents = receipt.events?.filter((e) => {
+                    return e.event === 'PostPublished';
+                });
+                if (publishEvents) {
+                    const [event] = publishEvents as Array<PostPublishedEvent>;
+                    const { index } = event.args;
+                    const newPost = await user.contract._posts(index);
+                    dispatchPosts({ addPost: newPost });
+                }
+            }
             setModalOpen(false);
         } catch {}
         setLoading(false);
@@ -45,7 +74,7 @@ export default function PostForm(props: PostFormProps) {
                 setModalOpen(false);
                 setLoading(false);
             }}
-            title="New Post"
+            title={editingIndex === undefined ? 'New Post' : 'Edit Post'}
             centered
         >
             <Stack>
@@ -57,7 +86,7 @@ export default function PostForm(props: PostFormProps) {
                     error={contentErr}
                 />
                 <Group position="right">
-                    <Button onClick={() => onSubmit()}>
+                    <Button onClick={loading ? () => undefined : () => onSubmit()}>
                         {loading ? (
                             <Loader variant="dots" color="white" />
                         ) : editingIndex === undefined ? (

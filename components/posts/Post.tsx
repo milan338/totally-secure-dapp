@@ -1,5 +1,10 @@
 import { createStyles, Text, Stack } from '@mantine/core';
 
+interface PostProps {
+    title: string;
+    content: string;
+}
+
 const useStyles = createStyles(() => ({
     title: {
         fontWeight: 'bold',
@@ -10,12 +15,13 @@ const useStyles = createStyles(() => ({
     },
 }));
 
-export default function Post() {
+export default function Post(props: PostProps) {
+    const { title, content } = props;
     const { classes } = useStyles();
     return (
         <Stack spacing="xs">
-            <Text className={classes.title}>Title</Text>
-            <Text className={classes.content}>Content</Text>
+            <Text className={classes.title}>{title}</Text>
+            <Text className={classes.content}>{content}</Text>
         </Stack>
     );
 }

@@ -1,5 +1,6 @@
 import { MantineProvider } from '@mantine/core';
 import UserProvider from 'components/context/UserContext';
+import PostsProvider from 'components/context/PostsContext';
 import type { AppProps } from 'next/app';
 
 function MyApp(props: AppProps) {
@@ -13,7 +14,9 @@ function MyApp(props: AppProps) {
             }}
         >
             <UserProvider>
-                <Component {...pageProps} />
+                <PostsProvider>
+                    <Component {...pageProps} />
+                </PostsProvider>
             </UserProvider>
         </MantineProvider>
     );
