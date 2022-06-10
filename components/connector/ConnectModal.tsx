@@ -1,9 +1,10 @@
-import abi from '../../abi.json';
 import { useState, useEffect } from 'react';
 import { Contract, providers } from 'ethers';
 import { Modal, Button } from '@mantine/core';
 import { useUser } from 'components/context/UserContext';
 import { isServer } from 'util/ssr';
+import { TotallySecureDapp__factory as factory } from 'ethtypes/factories/TotallySecureDapp__factory';
+import type { TotallySecureDapp } from 'ethtypes/TotallySecureDapp';
 
 type ContractAddress = Record<string, string>;
 
@@ -27,14 +28,14 @@ export default function ConnectModal() {
             const { chainId } = await provider.getNetwork();
             const active = chainId === CHAIN_ID;
             const contractAddress = await getContractAddr(account);
-            const contract = new Contract(contractAddress, abi, provider.getSigner());
+            const contract = new Contract(contractAddress, factory.abi, provider.getSigner());
             dispatchUser({
                 active: active,
                 noWallet: false,
                 provider: provider,
                 address: account,
                 chainId: chainId,
-                contract: contract,
+                contract: contract as TotallySecureDapp,
             });
             setModalOpen(!active);
         });
@@ -73,11 +74,15 @@ export default function ConnectModal() {
                 const n = accounts.length;
                 const active = !!n && user.chainId === CHAIN_ID;
                 const contractAddress = await getContractAddr(accounts[0]);
-                const contract = new Contract(contractAddress, abi, user.provider?.getSigner());
+                const contract = new Contract(
+                    contractAddress,
+                    factory.abi,
+                    user.provider?.getSigner()
+                );
                 dispatchUser({
                     active: active,
                     address: accounts[0],
-                    contract: contract,
+                    contract: contract as TotallySecureDapp,
                 });
                 setModalOpen(!active);
             }
