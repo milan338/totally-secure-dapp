@@ -1,7 +1,8 @@
-import abi from '../../abi.json';
 import { Contract, getDefaultProvider } from 'ethers';
 import { parseEther } from 'ethers/lib/utils';
+import { TotallySecureDapp__factory as factory } from 'ethtypes/factories/TotallySecureDapp__factory';
 import type { NextApiRequest, NextApiResponse } from 'next';
+import type { TotallySecureDapp } from 'ethtypes/TotallySecureDapp';
 
 type ReqData = {
     userAdddress: string;
@@ -19,11 +20,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
         const provider = getDefaultProvider('ropsten', {
             etherscan: process.env.ETHERSCAN_API_KEY,
         });
-        const contract = new Contract(contractAddress, abi, provider);
+        const contract = new Contract(contractAddress, factory.abi, provider) as TotallySecureDapp;
         const owner = await contract._owner();
         const flagCaptured = await contract._flagCaptured();
         const balance = await provider.getBalance(contractAddress);
-        if (owner === userAdddress && flagCaptured && parseEther(balance.toString()).gt(0.005)) {
+        if (owner === userAdddress && flagCaptured && balance.gt(parseEther('0.005'))) {
             const flag = process.env.FLAG;
             res.status(200).json({ flag: flag });
         } else {
