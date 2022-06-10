@@ -49,11 +49,12 @@ contract TotallySecureDapp is Initializable {
     }
 
     function removePost(uint256 index) external {
-        if (index < nPosts() - 1)
-            for (uint256 i = index; i < _posts.length; i++) {
+        if (int256(index) < int256(_posts.length - 1)) {
+            for (uint256 i = index; i < _posts.length - 1; i++) {
                 _posts[i] = _posts[i + 1];
                 _authors[i] = _authors[i + 1];
             }
+        }
         _posts.length--;
         _authors.length--;
         emit PostRemoved(msg.sender, index);

@@ -57,6 +57,12 @@ describe('TotallySecureDapp', () => {
         await expect(totallySecureDapp.removePost(0))
             .to.emit(totallySecureDapp, 'PostRemoved')
             .withArgs(owner.address, 0);
+        await totallySecureDapp.addPost('title 2', 'content 2');
+        await totallySecureDapp.addPost('title 3', 'content 3');
+        expect(await totallySecureDapp.nPosts()).to.equal(2);
+        await expect(totallySecureDapp.removePost(0))
+            .to.emit(totallySecureDapp, 'PostRemoved')
+            .withArgs(owner.address, 0);
     });
 
     it('Should only allow admins', async () => {
