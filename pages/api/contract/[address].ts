@@ -1,11 +1,13 @@
 import serviceAccount from '../../../serviceAccountKey.json';
 import admin from 'firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
+import { nanoid } from 'nanoid';
 import { rateLimit } from 'util/rate-limit';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-type Data = {
+type ResData = {
     contractAddress?: string;
+    id?: string;
     error?: string;
 };
 
@@ -14,7 +16,7 @@ const rateLimiter = rateLimit({
     uniqueTokensPerInterval: 500,
 });
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse<ResData>) {
     const { address } = req.query;
     try {
         await rateLimiter.check(res, 5, 'CACHE_TOKEN'); // 5 requests per minute
@@ -56,10 +58,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
         });
         users.set(
             {
-                [address]: userContract,
+                [address.toLowerCase()]: userContract,
             },
             { merge: true }
         );
     }
-    res.status(200).json({ contractAddress: userContract });
+    const ids = db.collection('users').doc('ids');
+    if (!ids) {
+        res.status(500).json({ error: 'Failed to load ids' });
+        return;
+    }
+    let id = (await ids.get()).get(address);
+    if (id === undefined) {
+        id = nanoid();
+        ids.set({ [address.toLowerCase()]: id }, { merge: true });
+    }
+    res.status(200).json({ contractAddress: userContract, id: id });
 }

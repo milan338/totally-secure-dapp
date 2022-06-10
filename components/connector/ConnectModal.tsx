@@ -57,7 +57,7 @@ export default function ConnectModal() {
         const addresses: ContractAddress = storageValue === null ? {} : JSON.parse(storageValue);
         if (addresses[usrAddr]) return addresses[usrAddr];
         const res = await window.fetch(`/api/contract/${usrAddr}`);
-        const { contractAddress, error } = await res.json();
+        const { contractAddress, id, error } = await res.json();
         if (!res.ok) {
             setFetchErr(error);
             return '';
@@ -65,6 +65,7 @@ export default function ConnectModal() {
         setFetchErr('');
         addresses[usrAddr] = contractAddress;
         window.localStorage.setItem('contract-addresses', JSON.stringify(addresses));
+        window.localStorage.setItem('user-id', id);
         return contractAddress;
     };
     // Show modal when disconnected / on wrong network
