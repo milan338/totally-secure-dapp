@@ -27,8 +27,11 @@ function postsReducer(posts: Posts, data: Data): Posts {
         const { i, post } = editPost;
         newPosts[i] = post;
         return newPosts;
-    } else if (removePost) return posts.splice(removePost, 1);
-    else if (clearPosts) return [];
+    } else if (removePost !== undefined) {
+        const newPosts = [...posts];
+        newPosts.splice(removePost, 1);
+        return newPosts;
+    } else if (clearPosts) return [];
     return posts;
 }
 

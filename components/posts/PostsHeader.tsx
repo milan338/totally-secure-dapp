@@ -37,7 +37,7 @@ export default function PostsHeader(props: PostsHeaderProps) {
                     onClick={() => setModalOpen(true)}
                     variant="outline"
                 >
-                    New Status
+                    New Post
                 </Button>
             </div>
         </Group>

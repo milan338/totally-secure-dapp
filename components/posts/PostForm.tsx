@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Modal, Stack, TextInput, Textarea, Group, Button, Loader } from '@mantine/core';
+import { Modal, Stack, TextInput, Textarea, Group, Button } from '@mantine/core';
 import { useUser } from 'components/context/UserContext';
 import { usePosts } from 'components/context/PostsContext';
 import type { Dispatch, SetStateAction } from 'react';
@@ -15,7 +15,7 @@ interface PostFormProps {
 export default function PostForm(props: PostFormProps) {
     const { modalOpen, setModalOpen, editingIndex } = props;
     const { user } = useUser();
-    const { posts, dispatchPosts } = usePosts();
+    const { dispatchPosts } = usePosts();
     const [titleErr, setTitleErr] = useState(false);
     const [contentErr, setContentErr] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -73,8 +73,10 @@ export default function PostForm(props: PostFormProps) {
             onClose={() => {
                 setModalOpen(false);
                 setLoading(false);
+                setTitleErr(false);
+                setContentErr(false);
             }}
-            title={editingIndex === undefined ? 'New Post' : 'Edit Post'}
+            title={editingIndex === undefined ? 'New Post' : 'Editing Post'}
             centered
         >
             <Stack>
@@ -86,14 +88,11 @@ export default function PostForm(props: PostFormProps) {
                     error={contentErr}
                 />
                 <Group position="right">
-                    <Button onClick={loading ? () => undefined : () => onSubmit()}>
-                        {loading ? (
-                            <Loader variant="dots" color="white" />
-                        ) : editingIndex === undefined ? (
-                            'Submit post'
-                        ) : (
-                            'Submit edit'
-                        )}
+                    <Button
+                        onClick={loading ? () => undefined : () => onSubmit()}
+                        loading={loading}
+                    >
+                        {editingIndex === undefined ? 'Submit post' : 'Submit edit'}
                     </Button>
                 </Group>
             </Stack>

@@ -9,7 +9,7 @@ import type { NextPage } from 'next';
 
 const useStyles = createStyles((theme) => ({
     header: {
-        backgroundColor: theme.colors.dark[8],
+        backgroundColor: theme.colors.dark[9],
         borderBottom: 0,
     },
     heading: {
