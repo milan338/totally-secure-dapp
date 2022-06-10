@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { createStyles, Text, Stack, Box, ActionIcon, Popover, Button, Center } from '@mantine/core';
+import { createStyles, Text, Stack, Box, ActionIcon, Popover, Button } from '@mantine/core';
 import { Settings } from 'tabler-icons-react';
 import { useUser } from 'components/context/UserContext';
 import { usePosts } from 'components/context/PostsContext';
@@ -60,34 +60,33 @@ export default function Post(props: PostProps) {
                         position="bottom"
                         withArrow
                     >
-                        <Center>
-                            <Stack>
-                                <Button
-                                    onClick={() => {
-                                        setActive(false);
-                                        setPostFormActive(true);
-                                        setEditing(index);
-                                    }}
-                                    variant="outline"
-                                >
-                                    Edit Post
-                                </Button>
-                                <Button
-                                    onClick={async () => {
-                                        setActive(false);
-                                        if (!user.contract) return;
-                                        const tx: ContractTransaction =
-                                            await user.contract.removePost(index);
-                                        await tx.wait();
-                                        dispatchPosts({ removePost: index });
-                                    }}
-                                    color="red"
-                                    variant="outline"
-                                >
-                                    Delete Post
-                                </Button>
-                            </Stack>
-                        </Center>
+                        <Stack>
+                            <Button
+                                onClick={() => {
+                                    setActive(false);
+                                    setPostFormActive(true);
+                                    setEditing(index);
+                                }}
+                                variant="outline"
+                            >
+                                Edit
+                            </Button>
+                            <Button
+                                onClick={async () => {
+                                    setActive(false);
+                                    if (!user.contract) return;
+                                    const tx: ContractTransaction = await user.contract.removePost(
+                                        index
+                                    );
+                                    await tx.wait();
+                                    dispatchPosts({ removePost: index });
+                                }}
+                                color="red"
+                                variant="outline"
+                            >
+                                Delete
+                            </Button>
+                        </Stack>
                     </Popover>
                 </div>
             </Stack>
