@@ -15,9 +15,9 @@ export default function Posts() {
         const getPosts = async () => {
             if (!user.contract) return;
             const nPosts = await user.contract.nPosts();
-            for (let i = 0; i < nPosts.toBigInt(); i++) {
+            for (let i = nPosts.sub(1).toBigInt(); i >= 0; i--) {
                 const post = await user.contract._posts(i);
-                dispatchPosts({ addPost: post });
+                dispatchPosts({ unshiftPost: post });
             }
         };
         getPosts();

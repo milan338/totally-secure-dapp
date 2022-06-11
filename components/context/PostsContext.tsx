@@ -12,6 +12,7 @@ type Post = {
 type Posts = Array<Post>;
 type Data = {
     addPost?: Post;
+    unshiftPost?: Post;
     editPost?: { i: number; post: Post };
     removePost?: number;
     clearPosts?: boolean;
@@ -20,9 +21,14 @@ type PostsDispatch = (data: Data) => void;
 type PostsContextT = { posts: Posts; dispatchPosts: PostsDispatch };
 
 function postsReducer(posts: Posts, data: Data): Posts {
-    const { addPost, editPost, removePost, clearPosts } = data;
-    if (addPost) return [...posts, addPost];
-    else if (editPost) {
+    const { addPost, unshiftPost, editPost, removePost, clearPosts } = data;
+    if (addPost) {
+        return [...posts, addPost];
+    } else if (unshiftPost) {
+        const newPosts = [...posts];
+        newPosts.unshift(unshiftPost);
+        return newPosts;
+    } else if (editPost) {
         const newPosts = [...posts];
         const { i, post } = editPost;
         newPosts[i] = post;
