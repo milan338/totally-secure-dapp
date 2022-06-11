@@ -1,7 +1,6 @@
 .env
 coverage
 coverage.json
-serviceAccountKey.json
 .openzeppelin
 
 #Hardhat files
