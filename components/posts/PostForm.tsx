@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useLayoutEffect } from 'react';
 import { Modal, Stack, TextInput, Textarea, Group, Button } from '@mantine/core';
 import { useUser } from 'components/context/UserContext';
 import { usePosts } from 'components/context/PostsContext';
@@ -15,17 +15,17 @@ interface PostFormProps {
 export default function PostForm(props: PostFormProps) {
     const { modalOpen, setModalOpen, editingIndex } = props;
     const { user } = useUser();
-    const { dispatchPosts } = usePosts();
+    const { posts, dispatchPosts } = usePosts();
     const [titleErr, setTitleErr] = useState(false);
     const [contentErr, setContentErr] = useState(false);
     const [loading, setLoading] = useState(false);
-    const titleRef = useRef<HTMLInputElement>(null);
-    const contentRef = useRef<HTMLTextAreaElement>(null);
+    const [title, setTitleRef] = useState<HTMLInputElement | null>(null);
+    const [content, setContentRef] = useState<HTMLTextAreaElement | null>(null);
     const onSubmit = async () => {
-        if (!titleRef.current || !contentRef.current || !user.contract || !user.provider) return;
+        if (title === null || content === null || !user.contract || !user.provider) return;
         const err = { title: false, content: false };
-        if (!titleRef.current.value) err.title = true;
-        if (!contentRef.current.value) err.content = true;
+        if (!title.value) err.title = true;
+        if (!content.value) err.content = true;
         setTitleErr(err.title);
         setContentErr(err.content);
         if (err.title || err.content) return;
@@ -34,8 +34,8 @@ export default function PostForm(props: PostFormProps) {
             if (editingIndex !== undefined) {
                 const tx: ContractTransaction = await user.contract.editPost(
                     editingIndex,
-                    titleRef.current.value,
-                    contentRef.current.value
+                    title.value,
+                    content.value
                 );
                 const receipt = await tx.wait();
                 const editEvents = receipt.events?.filter((e) => {
@@ -49,8 +49,8 @@ export default function PostForm(props: PostFormProps) {
                 }
             } else {
                 const tx: ContractTransaction = await user.contract.addPost(
-                    titleRef.current.value,
-                    contentRef.current.value
+                    title.value,
+                    content.value
                 );
                 const receipt = await tx.wait();
                 const publishEvents = receipt.events?.filter((e) => {
@@ -67,6 +67,12 @@ export default function PostForm(props: PostFormProps) {
         } catch {}
         setLoading(false);
     };
+    // Populate existing content when editing
+    useLayoutEffect(() => {
+        if (editingIndex === undefined || title === null || content === null) return;
+        title.value = posts[editingIndex].title;
+        content.value = posts[editingIndex].content;
+    }, [editingIndex, posts, title, content]);
     return (
         <Modal
             opened={modalOpen}
@@ -80,9 +86,14 @@ export default function PostForm(props: PostFormProps) {
             centered
         >
             <Stack>
-                <TextInput ref={titleRef} label="Title" placeholder="Post title" error={titleErr} />
+                <TextInput
+                    ref={setTitleRef}
+                    label="Title"
+                    placeholder="Post title"
+                    error={titleErr}
+                />
                 <Textarea
-                    ref={contentRef}
+                    ref={setContentRef}
                     label="Content"
                     placeholder="Post content"
                     error={contentErr}
