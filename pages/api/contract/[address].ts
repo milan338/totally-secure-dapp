@@ -1,4 +1,3 @@
-import serviceAccount from '../../../serviceAccountKey.json';
 import admin from 'firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { nanoid } from 'nanoid';
@@ -30,7 +29,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     }
     try {
         admin.initializeApp({
-            credential: admin.credential.cert(serviceAccount as any),
+            credential: admin.credential.cert(
+                JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY ?? '')
+            ),
         });
     } catch {}
     const db = admin.firestore();

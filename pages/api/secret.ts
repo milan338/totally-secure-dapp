@@ -1,4 +1,3 @@
-import serviceAccount from '../../serviceAccountKey.json';
 import admin from 'firebase-admin';
 import { Contract, getDefaultProvider } from 'ethers';
 import { parseEther } from 'ethers/lib/utils';
@@ -21,9 +20,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     const { userAddress, contractAddress, userId } = req.body as ReqData;
     try {
         admin.initializeApp({
-            credential: admin.credential.cert(serviceAccount as any),
+            credential: admin.credential.cert(
+                JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY ?? '')
+            ),
         });
-    } catch (err) {}
+    } catch {}
     const db = admin.firestore();
     try {
         const provider = getDefaultProvider('ropsten', {
