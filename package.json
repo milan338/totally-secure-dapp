@@ -6,11 +6,10 @@
         "dev": "next dev",
         "build": "next build",
         "start": "next start",
-        "lint": "next lint",
-        "postinstall": "typechain"
+        "lint": "next lint"
     },
     "engines": {
-        "node": "16.0.0"
+        "node": "16"
     },
     "dependencies": {
         "@mantine/core": "^4.2.7",
