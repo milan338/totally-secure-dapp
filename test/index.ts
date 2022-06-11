@@ -74,9 +74,11 @@ describe('TotallySecureDapp', () => {
 
     it('Should reject payments', async () => {
         const { parseEther } = ethers.utils;
+        expect(await owner.provider!.getBalance(totallySecureDapp.address)).to.equal(0);
         await expect(
             owner.sendTransaction({ to: totallySecureDapp.address, value: parseEther('1') })
         ).to.be.revertedWith('Contract does not accept payments');
+        expect(await owner.provider!.getBalance(totallySecureDapp.address)).to.equal(0);
     });
 
     it('Should overwrite the owner admin', async () => {
