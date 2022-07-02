@@ -1,7 +1,7 @@
 import admin from 'firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { nanoid } from 'nanoid';
-import { rateLimit } from 'util/rate-limit';
+import { checkRateLimit, getRateLimiter } from 'util/rate-limit';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 type ResData = {
@@ -10,15 +10,12 @@ type ResData = {
     error?: string;
 };
 
-const rateLimiter = rateLimit({
-    interval: 60000,
-    uniqueTokensPerInterval: 500,
-});
+const rateLimiter = getRateLimiter({ max: 3, windowMs: 60000 });
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse<ResData>) {
     const { address } = req.query;
     try {
-        await rateLimiter.check(res, 5, 'CACHE_TOKEN'); // 5 requests per minute
+        await checkRateLimit(req, res, rateLimiter);
     } catch {
         res.status(429).json({ error: 'Rate limit exceeded' });
         return;
