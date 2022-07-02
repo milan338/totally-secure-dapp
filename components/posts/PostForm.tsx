@@ -1,7 +1,8 @@
-import { useState, useRef, useLayoutEffect } from 'react';
+import { useState } from 'react';
 import { Modal, Stack, TextInput, Textarea, Group, Button } from '@mantine/core';
 import { useUser } from 'components/context/UserContext';
 import { usePosts } from 'components/context/PostsContext';
+import { useIsomorphicLayoutEffect } from 'util/hooks';
 import type { Dispatch, SetStateAction } from 'react';
 import type { ContractTransaction } from 'ethers';
 import type { PostPublishedEvent, PostEditedEvent } from 'ethtypes/TotallySecureDapp';
@@ -68,7 +69,7 @@ export default function PostForm(props: PostFormProps) {
         setLoading(false);
     };
     // Populate existing content when editing
-    useLayoutEffect(() => {
+    useIsomorphicLayoutEffect(() => {
         if (editingIndex === undefined || title === null || content === null) return;
         title.value = posts[editingIndex].title;
         content.value = posts[editingIndex].content;
