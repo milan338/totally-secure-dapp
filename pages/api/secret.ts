@@ -16,10 +16,7 @@ type ResData = {
     error?: string;
 };
 
-export default async function handler(
-    req: NextApiRequest,
-    res: NextApiResponse<ResData>
-) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse<ResData>) {
     const { userAddress, contractAddress, userId } = req.body as ReqData;
     try {
         admin.initializeApp({
@@ -33,20 +30,14 @@ export default async function handler(
         const provider = getDefaultProvider('ropsten', {
             etherscan: process.env.ETHERSCAN_API_KEY,
         });
-        const contract = new Contract(
-            contractAddress,
-            factory.abi,
-            provider
-        ) as TotallySecureDapp;
+        const contract = new Contract(contractAddress, factory.abi, provider) as TotallySecureDapp;
 
         const contracts = db.collection('users').doc('contracts');
         if (!contracts) {
             res.status(500).json({ error: 'Failed to load contracts' });
             return;
         }
-        const realContract = (await contracts.get()).get(
-            userAddress.toLowerCase()
-        );
+        const realContract = (await contracts.get()).get(userAddress.toLowerCase());
         if (contract !== realContract) {
             res.status(400).json({ error: 'Incorrect contract ID' });
             return;
@@ -55,11 +46,7 @@ export default async function handler(
         const owner = await contract._owner();
         const flagCaptured = await contract._flagCaptured();
         const balance = await provider.getBalance(contractAddress);
-        if (
-            owner === userAddress &&
-            flagCaptured &&
-            balance.gt(parseEther('0.005'))
-        ) {
+        if (owner === userAddress && flagCaptured && balance.gt(parseEther('0.005'))) {
             const ids = db.collection('users').doc('ids');
             if (!ids) {
                 res.status(500).json({ error: 'Failed to load ids' });
