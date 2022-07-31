@@ -37,9 +37,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
             res.status(500).json({ error: 'Failed to load contracts' });
             return;
         }
-        const realContract = (await contracts.get()).get(userAddress.toLowerCase());
-        if (contract !== realContract) {
-            res.status(400).json({ error: 'Incorrect contract ID' });
+        const realContractAddress = (await contracts.get()).get(userAddress.toLowerCase());
+        if (contractAddress.toLowerCase() !== realContractAddress.toLowerCase()) {
+            res.status(400).json({ error: 'Incorrect contract address' });
             return;
         }
 
