@@ -46,7 +46,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
         const owner = await contract._owner();
         const flagCaptured = await contract._flagCaptured();
         const balance = await provider.getBalance(contractAddress);
-        if (owner === userAddress && flagCaptured && balance.gt(parseEther('0.005'))) {
+        if (owner.toLowerCase() === userAddress.toLowerCase() && flagCaptured && balance.gt(parseEther('0.005'))) {
             const ids = db.collection('users').doc('ids');
             if (!ids) {
                 res.status(500).json({ error: 'Failed to load ids' });
